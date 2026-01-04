@@ -2,8 +2,48 @@ import { Request, Response, NextFunction } from 'express';
 import { RestaurantService } from '../services/restaurantService';
 import { AppError } from '../errors/AppError';
 import { AuthenticatedRequest } from '../middlewares/auth';
+import multer from 'multer';
+import path from 'path';
+import fs from 'fs';
 
 const restaurantService = new RestaurantService();
+
+// Set up multer for restaurant image uploads
+const restaurantStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadPath = path.join(process.cwd(), 'uploads', 'restaurants');
+    
+    // Create directory if it doesn't exist
+    if (!fs.existsSync(uploadPath)) {
+      fs.mkdirSync(uploadPath, { recursive: true });
+    }
+    
+    cb(null, uploadPath);
+  },
+  filename: (req, file, cb) => {
+    // Generate unique filename
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = path.extname(file.originalname);
+    cb(null, file.fieldname + '-' + uniqueSuffix + ext);
+  }
+});
+
+const restaurantFileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
+  // Check allowed file types
+  if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
+    cb(null, true);
+  } else {
+    cb(new AppError('Invalid file type. Only JPG and PNG files are allowed.', 400));
+  }
+};
+
+export const restaurantUpload = multer({ 
+  storage: restaurantStorage,
+  limits: {
+    fileSize: parseInt(process.env.MAX_FILE_SIZE || '2097152') // Default to 2MB
+  },
+  fileFilter: restaurantFileFilter
+});
 
 export const createRestaurant = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
@@ -11,7 +51,13 @@ export const createRestaurant = async (req: AuthenticatedRequest, res: Response,
       throw new AppError('User not authenticated', 401);
     }
 
-    const { name, description, address, city, state, zipCode, phone, image } = req.body;
+    const { name, description, address, city, state, zipCode, phone } = req.body;
+
+    // Handle image upload
+    let imagePath: string | undefined;
+    if (req.file) {
+      imagePath = `/uploads/restaurants/${req.file.filename}`;
+    }
 
     const restaurant = await restaurantService.createRestaurant({
       name,
@@ -21,7 +67,7 @@ export const createRestaurant = async (req: AuthenticatedRequest, res: Response,
       state,
       zipCode,
       phone,
-      image,
+      image: imagePath,
       ownerId: req.user.id
     });
 
@@ -86,7 +132,13 @@ export const updateRestaurant = async (req: AuthenticatedRequest, res: Response,
     }
 
     const { id } = req.params;
-    const { name, description, address, city, state, zipCode, phone, image, isActive } = req.body;
+    const { name, description, address, city, state, zipCode, phone, isActive } = req.body;
+
+    // Handle image upload
+    let imagePath: string | undefined;
+    if (req.file) {
+      imagePath = `/uploads/restaurants/${req.file.filename}`;
+    }
 
     const restaurant = await restaurantService.updateRestaurant(id, {
       name,
@@ -96,7 +148,7 @@ export const updateRestaurant = async (req: AuthenticatedRequest, res: Response,
       state,
       zipCode,
       phone,
-      image,
+      image: imagePath,
       isActive
     }, req.user.id);
 

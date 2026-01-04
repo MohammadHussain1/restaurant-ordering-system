@@ -5,7 +5,8 @@ import {
   getRestaurantBySlug, 
   getAllRestaurants, 
   updateRestaurant, 
-  deleteRestaurant 
+  deleteRestaurant,
+  restaurantUpload
 } from '../controllers/restaurantController';
 import { authenticate } from '../middlewares/auth';
 import { requireRole, requireRestaurantOwnership } from '../middlewares/roleAuth';
@@ -20,8 +21,8 @@ router.get('/:id', getRestaurantById);
 router.get('/slug/:slug', getRestaurantBySlug);
 
 // Protected routes
-router.post('/', authenticate, requireRole(UserRole.ADMIN, UserRole.RESTAURANT_OWNER), validate(createRestaurantSchema), createRestaurant);
-router.put('/:id', authenticate, requireRestaurantOwnership, validate(updateRestaurantSchema), updateRestaurant);
+router.post('/', authenticate, requireRole(UserRole.ADMIN, UserRole.RESTAURANT_OWNER), restaurantUpload.single('image'), validate(createRestaurantSchema), createRestaurant);
+router.put('/:id', authenticate, requireRestaurantOwnership, restaurantUpload.single('image'), validate(updateRestaurantSchema), updateRestaurant);
 router.delete('/:id', authenticate, requireRestaurantOwnership, deleteRestaurant);
 
 export default router;

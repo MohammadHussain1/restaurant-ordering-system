@@ -129,22 +129,59 @@
               {
                 "key": "Authorization",
                 "value": "Bearer {{accessToken}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
               }
             ],
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Sample Restaurant\",\n  \"description\": \"A great place to eat\",\n  \"address\": \"123 Main St\",\n  \"city\": \"New York\",\n  \"state\": \"NY\",\n  \"zipCode\": \"10001\",\n  \"phone\": \"+1234567890\",\n  \"image\": \"/uploads/restaurants/sample.jpg\"\n}"
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "Sample Restaurant",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "A great place to eat",
+                  "type": "text"
+                },
+                {
+                  "key": "address",
+                  "value": "123 Main St",
+                  "type": "text"
+                },
+                {
+                  "key": "city",
+                  "value": "New York",
+                  "type": "text"
+                },
+                {
+                  "key": "state",
+                  "value": "NY",
+                  "type": "text"
+                },
+                {
+                  "key": "zipCode",
+                  "value": "10001",
+                  "type": "text"
+                },
+                {
+                  "key": "phone",
+                  "value": "+1234567890",
+                  "type": "text"
+                },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": []
+                }
+              ]
             },
             "url": {
               "raw": "{{baseUrl}}/api/restaurants",
               "host": ["{{baseUrl}}"],
               "path": ["api", "restaurants"]
             },
-            "description": "Create a new restaurant (Restaurant Owner or Admin only)"
+            "description": "Create a new restaurant (Restaurant Owner or Admin only) - Form data with image upload"
           },
           "response": []
         },
@@ -156,22 +193,39 @@
               {
                 "key": "Authorization",
                 "value": "Bearer {{accessToken}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
               }
             ],
             "body": {
-              "mode": "raw",
-              "raw": "{\n  \"name\": \"Updated Restaurant Name\",\n  \"description\": \"Updated description\",\n  \"isActive\": true\n}"
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "name",
+                  "value": "Updated Restaurant Name",
+                  "type": "text"
+                },
+                {
+                  "key": "description",
+                  "value": "Updated description",
+                  "type": "text"
+                },
+                {
+                  "key": "isActive",
+                  "value": "true",
+                  "type": "text"
+                },
+                {
+                  "key": "image",
+                  "type": "file",
+                  "src": []
+                }
+              ]
             },
             "url": {
               "raw": "{{baseUrl}}/api/restaurants/{{restaurantId}}",
               "host": ["{{baseUrl}}"],
               "path": ["api", "restaurants", "{{restaurantId}}"]
             },
-            "description": "Update restaurant details (Restaurant Owner or Admin only)"
+            "description": "Update restaurant details (Restaurant Owner or Admin only) - Form data with optional image upload"
           },
           "response": []
         },
@@ -235,10 +289,6 @@
               {
                 "key": "Authorization",
                 "value": "Bearer {{accessToken}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
               }
             ],
             "body": {
@@ -281,7 +331,7 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "menu"]
             },
-            "description": "Create a new menu item (Restaurant Owner or Admin only)"
+            "description": "Create a new menu item (Restaurant Owner or Admin only) - Form data with image upload"
           },
           "response": []
         },
@@ -293,10 +343,6 @@
               {
                 "key": "Authorization",
                 "value": "Bearer {{accessToken}}"
-              },
-              {
-                "key": "Content-Type",
-                "value": "application/json"
               }
             ],
             "body": {
@@ -334,7 +380,7 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "menu", "{{menuItemId}}"]
             },
-            "description": "Update menu item details (Restaurant Owner or Admin only)"
+            "description": "Update menu item details (Restaurant Owner or Admin only) - Form data with optional image upload"
           },
           "response": []
         },

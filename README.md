@@ -5,14 +5,14 @@ A complete restaurant ordering system backend built with Express.js, PostgreSQL,
 ## Features
 
 - **User Management**: Registration, login, and role-based access control
-- **Restaurant Management**: Create, update, and manage restaurants
+- **Restaurant Management**: Create, update, and manage restaurants with image uploads
 - **Menu Management**: Add, update, and manage menu items with image uploads
 - **Order Management**: Place and track orders with real-time updates
 - **Payment Simulation**: Simulated payment processing with success/failure
 - **Real-time Updates**: Socket.IO integration for live order status updates
 - **Caching**: Redis integration for menu caching
 - **Rate Limiting**: Protection against API abuse
-- **File Uploads**: Local image storage for menu items
+- **File Uploads**: Local image storage for restaurants and menu items
 - **Docker Support**: Containerized setup for easy deployment
 
 ## Tech Stack
@@ -52,7 +52,8 @@ src/
 ├── app.ts             # Express app config
 └── server.ts          # Server bootstrap
 uploads/
-└── menu/              # Local image storage
+├── menu/              # Local image storage for menu items
+└── restaurants/       # Local image storage for restaurants
 ```
 
 ## Environment Variables
@@ -136,15 +137,15 @@ Import this file into Postman to test all API endpoints.
 - `GET /api/restaurants` - Get all restaurants
 - `GET /api/restaurants/:id` - Get restaurant by ID
 - `GET /api/restaurants/slug/:slug` - Get restaurant by slug
-- `POST /api/restaurants` - Create a new restaurant (auth required)
-- `PUT /api/restaurants/:id` - Update restaurant (auth required)
+- `POST /api/restaurants` - Create a new restaurant (auth required, form-data with image upload)
+- `PUT /api/restaurants/:id` - Update restaurant (auth required, form-data with optional image upload)
 - `DELETE /api/restaurants/:id` - Delete restaurant (auth required)
 
 #### Menu
 - `GET /api/menu/restaurant/:restaurantId` - Get menu by restaurant ID
 - `GET /api/menu/:id` - Get menu item by ID
-- `POST /api/menu` - Create menu item (auth required, form-data)
-- `PUT /api/menu/:id` - Update menu item (auth required, form-data)
+- `POST /api/menu` - Create menu item (auth required, form-data with image upload)
+- `PUT /api/menu/:id` - Update menu item (auth required, form-data with optional image upload)
 - `DELETE /api/menu/:id` - Delete menu item (auth required)
 
 #### Orders
@@ -163,6 +164,11 @@ Import this file into Postman to test all API endpoints.
 5. Use the "Login User" endpoint to get access tokens
 6. Set the `accessToken` variable in the environment with the returned token
 7. Use the token in the "Authorization" header for protected endpoints
+
+For endpoints that require image uploads:
+- Use "form-data" in the request body
+- Add text fields as key-value pairs
+- Add image files with key "image" and select the file
 
 ## Error Handling
 
@@ -224,6 +230,15 @@ All successful API responses follow this format:
   }
 }
 ```
+
+## File Uploads
+
+The system supports image uploads for both restaurants and menu items:
+- Restaurant images are stored in `uploads/restaurants/`
+- Menu item images are stored in `uploads/menu/`
+- File types: JPEG and PNG only
+- Maximum file size: 2MB
+- The image path is stored in the database and can be accessed via the API
 
 ## Utility Functions
 
