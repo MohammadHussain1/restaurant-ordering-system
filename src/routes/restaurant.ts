@@ -9,7 +9,7 @@ import {
 } from '../controllers/restaurantController';
 import { authenticate } from '../middlewares/auth';
 import { requireRole, requireRestaurantOwnership } from '../middlewares/roleAuth';
-import { UserRole } from '../models/User';
+import { UserRole } from '../types/enums';
 import { validate } from '../middlewares/validation';
 import { createRestaurantSchema, updateRestaurantSchema } from '../validators';
 

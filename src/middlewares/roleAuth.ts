@@ -1,7 +1,7 @@
 import { Response, NextFunction } from 'express';
 import { AppError } from '../errors/AppError';
 import { AuthenticatedRequest } from './auth';
-import { UserRole } from '../models/User';
+import { UserRole } from '../types/enums';
 
 export const requireRole = (...roles: UserRole[]) => {
   return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {

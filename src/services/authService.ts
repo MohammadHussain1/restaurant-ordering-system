@@ -1,5 +1,6 @@
 import { AppDataSource } from '../database/datasource';
-import { User, UserRole } from '../models/User';
+import { User } from '../models/User';
+import { UserRole } from '../types/enums';
 import { AppError } from '../errors/AppError';
 import bcrypt from 'bcrypt';
 import { generateAccessToken, generateRefreshToken } from '../utils/jwt';

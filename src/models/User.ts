@@ -1,12 +1,8 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, OneToMany } from 'typeorm';
 import { Restaurant } from './Restaurant';
 import { Order } from './Order';
+import { UserRole } from '../types/enums';
 
-export enum UserRole {
-  ADMIN = 'admin',
-  RESTAURANT_OWNER = 'restaurant_owner',
-  CUSTOMER = 'customer',
-}
 
 @Entity('users')
 export class User {

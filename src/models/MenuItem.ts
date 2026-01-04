@@ -1,13 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn, ManyToOne } from 'typeorm';
 import { Restaurant } from './Restaurant';
+import { MenuItemCategory } from '../types/enums';
 
-export enum MenuItemCategory {
-  APPETIZER = 'appetizer',
-  MAIN_COURSE = 'main_course',
-  DESSERT = 'dessert',
-  BEVERAGE = 'beverage',
-  SIDE = 'side',
-}
 
 @Entity('menu_items')
 export class MenuItem {

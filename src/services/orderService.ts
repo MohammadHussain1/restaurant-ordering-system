@@ -1,5 +1,6 @@
 import { AppDataSource } from '../database/datasource';
-import { Order, OrderStatus, PaymentStatus } from '../models/Order';
+import { Order } from '../models/Order';
+import { OrderStatus, PaymentStatus } from '../types/enums';
 import { OrderItem } from '../models/OrderItem';
 import { User } from '../models/User';
 import { Restaurant } from '../models/Restaurant';

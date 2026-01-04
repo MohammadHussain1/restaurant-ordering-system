@@ -9,7 +9,7 @@ import {
 } from '../controllers/menuController';
 import { authenticate } from '../middlewares/auth';
 import { requireRole } from '../middlewares/roleAuth';
-import { UserRole } from '../models/User';
+import { UserRole } from '../types/enums';
 import { validate } from '../middlewares/validation';
 import { createMenuItemSchema, updateMenuItemSchema } from '../validators';
 

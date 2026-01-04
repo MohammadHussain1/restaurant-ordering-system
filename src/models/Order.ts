@@ -2,20 +2,8 @@ import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateCol
 import { User } from './User';
 import { Restaurant } from './Restaurant';
 import { OrderItem } from './OrderItem';
+import { OrderStatus, PaymentStatus } from '../types/enums';
 
-export enum OrderStatus {
-  PENDING = 'pending',
-  PREPARING = 'preparing',
-  READY = 'ready',
-  DELIVERED = 'delivered',
-  CANCELLED = 'cancelled',
-}
-
-export enum PaymentStatus {
-  PENDING = 'pending',
-  SUCCESS = 'success',
-  FAILED = 'failed',
-}
 
 @Entity('orders')
 export class Order {

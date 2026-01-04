@@ -47,6 +47,7 @@ src/
 ├── middlewares/       # Auth, role, rate limit
 ├── validators/        # Request validation
 ├── sockets/           # Socket.IO logic
+├── types/             # Type definitions
 ├── utils/             # helpers, redis wrapper
 ├── errors/            # Custom errors
 ├── app.ts             # Express app config
@@ -247,3 +248,12 @@ The project includes the following utility functions:
 - `safeParse<T>(str: string): T | null` - Safely parse JSON string
 - Custom `AppError` class for consistent error handling
 - Redis JSON wrapper methods (`setJSON`, `getJSON`)
+
+## Type Definitions
+
+All application enums are centralized in `src/types/enums.ts`:
+
+- `UserRole`: ADMIN, RESTAURANT_OWNER, CUSTOMER
+- `MenuItemCategory`: APPETIZER, MAIN_COURSE, DESSERT, BEVERAGE, SIDE
+- `OrderStatus`: PENDING, PREPARING, READY, DELIVERED, CANCELLED
+- `PaymentStatus`: PENDING, SUCCESS, FAILED

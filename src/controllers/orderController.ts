@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { OrderService } from '../services/orderService';
 import { AppError } from '../errors/AppError';
 import { AuthenticatedRequest } from '../middlewares/auth';
-import { OrderStatus } from '../models/Order';
+import { OrderStatus } from '../types/enums';
 import { Server } from 'socket.io';
 import { getRedisClient } from '../config/redis';
 
