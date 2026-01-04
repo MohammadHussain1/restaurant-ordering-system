@@ -24,6 +24,34 @@ interface UpdateMenuItemInput {
   isAvailable?: boolean;
 }
 
+interface MenuItemResponse {
+  id: string;
+  name: string;
+  description?: string;
+  price: number;
+  category: string;
+  image?: string;
+  isActive: boolean;
+  isAvailable: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  restaurant: {
+    id: string;
+    name: string;
+    slug: string;
+    description?: string;
+    address?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
+    phone?: string;
+    image?: string;
+    isActive: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+  };
+}
+
 export class MenuService {
   private menuItemRepository = AppDataSource.getRepository(MenuItem);
   private restaurantRepository = AppDataSource.getRepository(Restaurant);
@@ -52,10 +80,37 @@ export class MenuService {
     return await this.menuItemRepository.save(menuItem);
   }
 
-  async getMenuItemById(id: string): Promise<MenuItem> {
+  async getMenuItemById(id: string): Promise<MenuItemResponse> {
     const menuItem = await this.menuItemRepository.findOne({
       where: { id },
-      relations: ['restaurant']
+      relations: ['restaurant'],
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        price: true,
+        category: true,
+        image: true,
+        isActive: true,
+        isAvailable: true,
+        createdAt: true,
+        updatedAt: true,
+        restaurant: {
+          id: true,
+          name: true,
+          slug: true,
+          description: true,
+          address: true,
+          city: true,
+          state: true,
+          zipCode: true,
+          phone: true,
+          image: true,
+          isActive: true,
+          createdAt: true,
+          updatedAt: true
+        }
+      }
     });
 
     if (!menuItem) {
@@ -65,14 +120,41 @@ export class MenuService {
     return menuItem;
   }
 
-  async getMenuByRestaurantId(restaurantId: string): Promise<MenuItem[]> {
+  async getMenuByRestaurantId(restaurantId: string): Promise<MenuItemResponse[]> {
     return await this.menuItemRepository.find({
       where: { 
         restaurant: { id: restaurantId },
         isActive: true,
         isAvailable: true
       },
-      order: { createdAt: 'ASC' }
+      order: { createdAt: 'ASC' },
+      select: {
+        id: true,
+        name: true,
+        description: true,
+        price: true,
+        category: true,
+        image: true,
+        isActive: true,
+        isAvailable: true,
+        createdAt: true,
+        updatedAt: true,
+        restaurant: {
+          id: true,
+          name: true,
+          slug: true,
+          description: true,
+          address: true,
+          city: true,
+          state: true,
+          zipCode: true,
+          phone: true,
+          image: true,
+          isActive: true,
+          createdAt: true,
+          updatedAt: true
+        }
+      }
     });
   }
 

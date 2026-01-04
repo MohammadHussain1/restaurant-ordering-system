@@ -27,6 +27,33 @@ interface UpdateRestaurantInput {
   isActive?: boolean;
 }
 
+interface RestaurantResponse {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  zipCode?: string;
+  phone?: string;
+  image?: string;
+  isActive: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  owner: {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    phone?: string;
+    role: string;
+    isActive: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+  };
+}
+
 export class RestaurantService {
   private restaurantRepository = AppDataSource.getRepository(Restaurant);
   private userRepository = AppDataSource.getRepository(User);
@@ -34,7 +61,18 @@ export class RestaurantService {
   async createRestaurant(input: CreateRestaurantInput): Promise<Restaurant> {
     // Check if user exists and is restaurant owner
     const owner = await this.userRepository.findOne({
-      where: { id: input.ownerId }
+      where: { id: input.ownerId },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        phone: true,
+        role: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true
+      }
     });
 
     if (!owner) {
@@ -73,15 +111,41 @@ export class RestaurantService {
     restaurant.phone = input.phone || undefined;
     restaurant.image = input.image || undefined;
     restaurant.isActive = true;
-    restaurant.owner = owner;
+    restaurant.owner = owner as any; // Type assertion since we're selecting specific fields
 
     return await this.restaurantRepository.save(restaurant);
   }
 
-  async getRestaurantById(id: string): Promise<Restaurant> {
+  async getRestaurantById(id: string): Promise<RestaurantResponse> {
     const restaurant = await this.restaurantRepository.findOne({
       where: { id },
-      relations: ['owner']
+      relations: ['owner'],
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        address: true,
+        city: true,
+        state: true,
+        zipCode: true,
+        phone: true,
+        image: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+        owner: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          phone: true,
+          role: true,
+          isActive: true,
+          createdAt: true,
+          updatedAt: true
+        }
+      }
     });
 
     if (!restaurant) {
@@ -91,10 +155,36 @@ export class RestaurantService {
     return restaurant;
   }
 
-  async getRestaurantBySlug(slug: string): Promise<Restaurant> {
+  async getRestaurantBySlug(slug: string): Promise<RestaurantResponse> {
     const restaurant = await this.restaurantRepository.findOne({
       where: { slug },
-      relations: ['owner']
+      relations: ['owner'],
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        address: true,
+        city: true,
+        state: true,
+        zipCode: true,
+        phone: true,
+        image: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+        owner: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          phone: true,
+          role: true,
+          isActive: true,
+          createdAt: true,
+          updatedAt: true
+        }
+      }
     });
 
     if (!restaurant) {
@@ -104,10 +194,36 @@ export class RestaurantService {
     return restaurant;
   }
 
-  async getAllRestaurants(): Promise<Restaurant[]> {
+  async getAllRestaurants(): Promise<RestaurantResponse[]> {
     return await this.restaurantRepository.find({
       where: { isActive: true },
-      relations: ['owner']
+      relations: ['owner'],
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        description: true,
+        address: true,
+        city: true,
+        state: true,
+        zipCode: true,
+        phone: true,
+        image: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true,
+        owner: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          phone: true,
+          role: true,
+          isActive: true,
+          createdAt: true,
+          updatedAt: true
+        }
+      }
     });
   }
 
@@ -122,7 +238,20 @@ export class RestaurantService {
     }
 
     // Check if user is the owner or admin
-    const user = await this.userRepository.findOne({ where: { id: userId } });
+    const user = await this.userRepository.findOne({ 
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        phone: true,
+        role: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true
+      }
+    });
     if (!user) {
       throw new AppError('User not found', 404);
     }
@@ -163,7 +292,20 @@ export class RestaurantService {
     }
 
     // Check if user is the owner or admin
-    const user = await this.userRepository.findOne({ where: { id: userId } });
+    const user = await this.userRepository.findOne({ 
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        firstName: true,
+        lastName: true,
+        phone: true,
+        role: true,
+        isActive: true,
+        createdAt: true,
+        updatedAt: true
+      }
+    });
     if (!user) {
       throw new AppError('User not found', 404);
     }

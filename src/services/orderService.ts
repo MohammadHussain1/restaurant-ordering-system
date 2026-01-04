@@ -24,6 +24,62 @@ interface UpdateOrderStatusInput {
   updatedBy: string; // ID of the user updating the status
 }
 
+interface OrderResponse {
+  id: string;
+  status: OrderStatus;
+  paymentStatus: PaymentStatus;
+  totalPrice: number;
+  customerNote?: string;
+  deliveryAddress?: string;
+  createdAt: Date;
+  updatedAt: Date;
+  customer: {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    phone?: string;
+    role: string;
+    isActive: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+  };
+  restaurant: {
+    id: string;
+    name: string;
+    slug: string;
+    description?: string;
+    address?: string;
+    city?: string;
+    state?: string;
+    zipCode?: string;
+    phone?: string;
+    image?: string;
+    isActive: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+  };
+  orderItems: {
+    id: string;
+    quantity: number;
+    price: number;
+    createdAt: Date;
+    updatedAt: Date;
+    menuItem: {
+      id: string;
+      name: string;
+      description?: string;
+      price: number;
+      category: string;
+      image?: string;
+      isActive: boolean;
+      isAvailable: boolean;
+      createdAt: Date;
+      updatedAt: Date;
+    };
+  }[];
+}
+
 export class OrderService {
   private orderRepository = AppDataSource.getRepository(Order);
   private orderItemRepository = AppDataSource.getRepository(OrderItem);
@@ -31,7 +87,7 @@ export class OrderService {
   private restaurantRepository = AppDataSource.getRepository(Restaurant);
   private menuItemRepository = AppDataSource.getRepository(MenuItem);
 
-  async createOrder(input: CreateOrderInput): Promise<Order> {
+  async createOrder(input: CreateOrderInput): Promise<OrderResponse> {
     // Start a transaction
     const queryRunner = AppDataSource.createQueryRunner();
     await queryRunner.connect();
@@ -40,7 +96,18 @@ export class OrderService {
     try {
       // Verify customer exists
       const customer = await queryRunner.manager.findOne(User, {
-        where: { id: input.customerId }
+        where: { id: input.customerId },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          phone: true,
+          role: true,
+          isActive: true,
+          createdAt: true,
+          updatedAt: true
+        }
       });
 
       if (!customer) {
@@ -73,7 +140,7 @@ export class OrderService {
       // Create order
       const order = new Order();
       order.restaurant = restaurant;
-      order.customer = customer;
+      order.customer = customer as any; // Type assertion since we're selecting specific fields
       order.customerNote = input.customerNote || undefined;
       order.deliveryAddress = input.deliveryAddress || undefined;
       order.status = OrderStatus.PENDING;
@@ -110,13 +177,72 @@ export class OrderService {
       // Commit the transaction
       await queryRunner.commitTransaction();
 
-      // Fetch the complete order with relations
+      // Fetch the complete order with relations using database-level selection
       const completeOrder = await this.orderRepository.findOne({
         where: { id: savedOrder.id },
-        relations: ['orderItems', 'orderItems.menuItem', 'restaurant', 'customer']
+        relations: ['orderItems', 'orderItems.menuItem', 'restaurant', 'customer'],
+        select: {
+          id: true,
+          status: true,
+          paymentStatus: true,
+          totalPrice: true,
+          customerNote: true,
+          deliveryAddress: true,
+          createdAt: true,
+          updatedAt: true,
+          customer: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            phone: true,
+            role: true,
+            isActive: true,
+            createdAt: true,
+            updatedAt: true
+          },
+          restaurant: {
+            id: true,
+            name: true,
+            slug: true,
+            description: true,
+            address: true,
+            city: true,
+            state: true,
+            zipCode: true,
+            phone: true,
+            image: true,
+            isActive: true,
+            createdAt: true,
+            updatedAt: true
+          },
+          orderItems: {
+            id: true,
+            quantity: true,
+            price: true,
+            createdAt: true,
+            updatedAt: true,
+            menuItem: {
+              id: true,
+              name: true,
+              description: true,
+              price: true,
+              category: true,
+              image: true,
+              isActive: true,
+              isAvailable: true,
+              createdAt: true,
+              updatedAt: true
+            }
+          }
+        }
       });
 
-      return completeOrder!;
+      if (!completeOrder) {
+        throw new AppError('Order creation failed', 500);
+      }
+
+      return completeOrder;
     } catch (error) {
       await queryRunner.rollbackTransaction();
       throw error;
@@ -144,14 +270,69 @@ export class OrderService {
     }
   }
 
-  async getOrderById(orderId: string, userId: string, userRole: string): Promise<Order> {
-    let order: Order | null;
+  async getOrderById(orderId: string, userId: string, userRole: string): Promise<OrderResponse> {
+    let order: OrderResponse | null;
     
     if (userRole === 'admin') {
       // Admin can access any order
       order = await this.orderRepository.findOne({
         where: { id: orderId },
-        relations: ['orderItems', 'orderItems.menuItem', 'restaurant', 'customer']
+        relations: ['orderItems', 'orderItems.menuItem', 'restaurant', 'customer'],
+        select: {
+          id: true,
+          status: true,
+          paymentStatus: true,
+          totalPrice: true,
+          customerNote: true,
+          deliveryAddress: true,
+          createdAt: true,
+          updatedAt: true,
+          customer: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            phone: true,
+            role: true,
+            isActive: true,
+            createdAt: true,
+            updatedAt: true
+          },
+          restaurant: {
+            id: true,
+            name: true,
+            slug: true,
+            description: true,
+            address: true,
+            city: true,
+            state: true,
+            zipCode: true,
+            phone: true,
+            image: true,
+            isActive: true,
+            createdAt: true,
+            updatedAt: true
+          },
+          orderItems: {
+            id: true,
+            quantity: true,
+            price: true,
+            createdAt: true,
+            updatedAt: true,
+            menuItem: {
+              id: true,
+              name: true,
+              description: true,
+              price: true,
+              category: true,
+              image: true,
+              isActive: true,
+              isAvailable: true,
+              createdAt: true,
+              updatedAt: true
+            }
+          }
+        }
       });
     } else {
       // Regular users can only access their own orders
@@ -160,7 +341,62 @@ export class OrderService {
           id: orderId,
           customer: { id: userId }
         },
-        relations: ['orderItems', 'orderItems.menuItem', 'restaurant', 'customer']
+        relations: ['orderItems', 'orderItems.menuItem', 'restaurant', 'customer'],
+        select: {
+          id: true,
+          status: true,
+          paymentStatus: true,
+          totalPrice: true,
+          customerNote: true,
+          deliveryAddress: true,
+          createdAt: true,
+          updatedAt: true,
+          customer: {
+            id: true,
+            email: true,
+            firstName: true,
+            lastName: true,
+            phone: true,
+            role: true,
+            isActive: true,
+            createdAt: true,
+            updatedAt: true
+          },
+          restaurant: {
+            id: true,
+            name: true,
+            slug: true,
+            description: true,
+            address: true,
+            city: true,
+            state: true,
+            zipCode: true,
+            phone: true,
+            image: true,
+            isActive: true,
+            createdAt: true,
+            updatedAt: true
+          },
+          orderItems: {
+            id: true,
+            quantity: true,
+            price: true,
+            createdAt: true,
+            updatedAt: true,
+            menuItem: {
+              id: true,
+              name: true,
+              description: true,
+              price: true,
+              category: true,
+              image: true,
+              isActive: true,
+              isAvailable: true,
+              createdAt: true,
+              updatedAt: true
+            }
+          }
+        }
       });
     }
 
@@ -171,17 +407,72 @@ export class OrderService {
     return order;
   }
 
-  async getOrdersByCustomerId(customerId: string): Promise<Order[]> {
+  async getOrdersByCustomerId(customerId: string): Promise<OrderResponse[]> {
     return await this.orderRepository.find({
       where: { 
         customer: { id: customerId }
       },
       order: { createdAt: 'DESC' },
-      relations: ['orderItems', 'orderItems.menuItem', 'restaurant']
+      relations: ['orderItems', 'orderItems.menuItem', 'restaurant'],
+      select: {
+        id: true,
+        status: true,
+        paymentStatus: true,
+        totalPrice: true,
+        customerNote: true,
+        deliveryAddress: true,
+        createdAt: true,
+        updatedAt: true,
+        customer: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          phone: true,
+          role: true,
+          isActive: true,
+          createdAt: true,
+          updatedAt: true
+        },
+        restaurant: {
+          id: true,
+          name: true,
+          slug: true,
+          description: true,
+          address: true,
+          city: true,
+          state: true,
+          zipCode: true,
+          phone: true,
+          image: true,
+          isActive: true,
+          createdAt: true,
+          updatedAt: true
+        },
+        orderItems: {
+          id: true,
+          quantity: true,
+          price: true,
+          createdAt: true,
+          updatedAt: true,
+          menuItem: {
+            id: true,
+            name: true,
+            description: true,
+            price: true,
+            category: true,
+            image: true,
+            isActive: true,
+            isAvailable: true,
+            createdAt: true,
+            updatedAt: true
+          }
+        }
+      }
     });
   }
 
-  async getOrdersByRestaurantId(restaurantId: string, userId: string, userRole: string): Promise<Order[]> {
+  async getOrdersByRestaurantId(restaurantId: string, userId: string, userRole: string): Promise<OrderResponse[]> {
     // Check if user is the restaurant owner or admin
     if (userRole !== 'admin') {
       const restaurant = await this.restaurantRepository.findOne({
@@ -198,7 +489,62 @@ export class OrderService {
         restaurant: { id: restaurantId }
       },
       order: { createdAt: 'DESC' },
-      relations: ['orderItems', 'orderItems.menuItem', 'customer']
+      relations: ['orderItems', 'orderItems.menuItem', 'customer'],
+      select: {
+        id: true,
+        status: true,
+        paymentStatus: true,
+        totalPrice: true,
+        customerNote: true,
+        deliveryAddress: true,
+        createdAt: true,
+        updatedAt: true,
+        customer: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          phone: true,
+          role: true,
+          isActive: true,
+          createdAt: true,
+          updatedAt: true
+        },
+        restaurant: {
+          id: true,
+          name: true,
+          slug: true,
+          description: true,
+          address: true,
+          city: true,
+          state: true,
+          zipCode: true,
+          phone: true,
+          image: true,
+          isActive: true,
+          createdAt: true,
+          updatedAt: true
+        },
+        orderItems: {
+          id: true,
+          quantity: true,
+          price: true,
+          createdAt: true,
+          updatedAt: true,
+          menuItem: {
+            id: true,
+            name: true,
+            description: true,
+            price: true,
+            category: true,
+            image: true,
+            isActive: true,
+            isAvailable: true,
+            createdAt: true,
+            updatedAt: true
+          }
+        }
+      }
     });
   }
 
