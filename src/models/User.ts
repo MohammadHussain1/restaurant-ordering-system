@@ -3,7 +3,6 @@ import { Restaurant } from './Restaurant';
 import { Order } from './Order';
 import { UserRole } from '../types/enums';
 
-
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')

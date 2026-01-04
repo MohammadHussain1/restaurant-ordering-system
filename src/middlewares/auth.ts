@@ -10,6 +10,7 @@ export interface AuthenticatedRequest extends Request {
 
 export const authenticate = async (req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
+    // Get the token from header
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -18,12 +19,14 @@ export const authenticate = async (req: AuthenticatedRequest, res: Response, nex
 
     const token = authHeader.split(' ')[1];
 
+    // Check if token is valid
     const tokenPayload = verifyToken(token);
 
     if (!tokenPayload) {
       throw new AppError('Invalid or expired token', 401);
     }
 
+    // Fetch user data but exclude password
     const userRepository = AppDataSource.getRepository(User);
     const user = await userRepository.findOne({
       where: { id: tokenPayload.userId },
@@ -34,9 +37,11 @@ export const authenticate = async (req: AuthenticatedRequest, res: Response, nex
       throw new AppError('User not found or inactive', 401);
     }
 
+    // Add user to request for later use
     req.user = user;
     next();
   } catch (error) {
     next(error);
   }
 };
+

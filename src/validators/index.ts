@@ -1,6 +1,6 @@
 import Joi from 'joi';
 
-// User validation schemas
+// Validation schemas for user registration
 export const registerSchema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string().min(6).required(),
@@ -15,7 +15,7 @@ export const loginSchema = Joi.object({
   password: Joi.string().required(),
 });
 
-// Restaurant validation schemas
+// Validation schemas for restaurant management
 export const createRestaurantSchema = Joi.object({
   name: Joi.string().required(),
   description: Joi.string().optional(),
@@ -39,7 +39,7 @@ export const updateRestaurantSchema = Joi.object({
   isActive: Joi.boolean().optional(),
 });
 
-// Menu item validation schemas
+// Validation schemas for menu item management
 export const createMenuItemSchema = Joi.object({
   name: Joi.string().required(),
   description: Joi.string().optional(),
@@ -60,7 +60,7 @@ export const updateMenuItemSchema = Joi.object({
   isAvailable: Joi.boolean().optional(),
 });
 
-// Order validation schemas
+// Validation schemas for order management
 export const createOrderSchema = Joi.object({
   restaurantId: Joi.string().uuid().required(),
   orderItems: Joi.array()

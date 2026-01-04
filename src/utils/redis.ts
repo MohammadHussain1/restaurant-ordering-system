@@ -1,5 +1,6 @@
 import { RedisClientType } from 'redis';
 
+// Helper function to store JSON objects in Redis with optional expiration
 export const setJSON = async (client: RedisClientType, key: string, value: any, expirationSeconds?: number): Promise<string | null> => {
   try {
     const serializedValue = JSON.stringify(value);
@@ -15,10 +16,11 @@ export const setJSON = async (client: RedisClientType, key: string, value: any, 
 };
 
 export const getRedisJSON = async (key: string): Promise<any> => {
+  // Retrieve and parse a JSON object from Redis
   try {
     const value = await getRedisClient().get(key);
     if (value === null) {
-      return null;
+      return null; // Key doesn't exist
     }
     return JSON.parse(value);
   } catch (error) {
@@ -27,13 +29,13 @@ export const getRedisJSON = async (key: string): Promise<any> => {
   }
 };
 
-// Also export a standalone setJSON that can be attached to the client
+// Extend Redis client with JSON methods for easier usage
 export const attachJSONMethods = (client: RedisClientType) => {
   (client as any).getJSON = (key: string) => getRedisJSON(key);
   (client as any).setJSON = (key: string, value: any, expirationSeconds?: number) => setJSON(client, key, value, expirationSeconds);
 };
 
-// Export a function to get the Redis client to avoid circular dependencies
+// Helper to get Redis client instance (avoiding circular dependency issues)
 export const getRedisClient = () => {
   return require('../config/redis').getRedisClient();
 };

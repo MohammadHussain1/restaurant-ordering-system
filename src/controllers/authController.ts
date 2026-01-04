@@ -9,7 +9,7 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
   try {
     const { email, password, firstName, lastName, phone, role } = req.body;
 
-    const result = await authService.register({
+    const registrationResult = await authService.register({
       email,
       password,
       firstName,
@@ -22,9 +22,9 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
       success: true,
       message: 'User registered successfully',
       data: {
-        user: result.user,
-        accessToken: result.accessToken,
-        refreshToken: result.refreshToken
+        user: registrationResult.user,
+        accessToken: registrationResult.accessToken,
+        refreshToken: registrationResult.refreshToken
       }
     });
   } catch (error) {
@@ -32,11 +32,12 @@ export const register = async (req: Request, res: Response, next: NextFunction) 
   }
 };
 
+
 export const login = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { email, password } = req.body;
 
-    const result = await authService.login({
+    const loginResult = await authService.login({
       email,
       password
     });
@@ -45,15 +46,17 @@ export const login = async (req: Request, res: Response, next: NextFunction) => 
       success: true,
       message: 'Login successful',
       data: {
-        user: result.user,
-        accessToken: result.accessToken,
-        refreshToken: result.refreshToken
+        user: loginResult.user,
+        accessToken: loginResult.accessToken,
+        refreshToken: loginResult.refreshToken
       }
     });
   } catch (error) {
     next(error);
   }
 };
+
+
 
 export const getProfile = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {

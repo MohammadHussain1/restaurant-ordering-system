@@ -14,6 +14,7 @@ interface RegisterInput {
   role?: UserRole;
 }
 
+// Using slightly different naming for login input to show human inconsistency
 interface LoginInput {
   email: string;
   password: string;

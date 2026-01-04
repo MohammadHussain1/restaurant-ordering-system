@@ -13,7 +13,7 @@ const restaurantStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadPath = path.join(process.cwd(), 'uploads', 'restaurants');
     
-    // Create directory if it doesn't exist
+    // Create upload directory if it doesn't exist
     if (!fs.existsSync(uploadPath)) {
       fs.mkdirSync(uploadPath, { recursive: true });
     }
@@ -21,7 +21,7 @@ const restaurantStorage = multer.diskStorage({
     cb(null, uploadPath);
   },
   filename: (req, file, cb) => {
-    // Generate unique filename
+    // Generate unique filename to avoid conflicts
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
     const ext = path.extname(file.originalname);
     cb(null, file.fieldname + '-' + uniqueSuffix + ext);
@@ -29,7 +29,7 @@ const restaurantStorage = multer.diskStorage({
 });
 
 const restaurantFileFilter = (req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
-  // Check allowed file types
+  // Only allow JPEG and PNG images
   if (file.mimetype === 'image/jpeg' || file.mimetype === 'image/png') {
     cb(null, true);
   } else {
@@ -54,12 +54,12 @@ export const createRestaurant = async (req: AuthenticatedRequest, res: Response,
     const { name, description, address, city, state, zipCode, phone } = req.body;
 
     // Handle image upload
-    let imagePath: string | undefined;
+    let restaurantImgPath: string | undefined;
     if (req.file) {
-      imagePath = `/uploads/restaurants/${req.file.filename}`;
+      restaurantImgPath = `/uploads/restaurants/${req.file.filename}`;
     }
 
-    const restaurant = await restaurantService.createRestaurant({
+    const newRestaurant = await restaurantService.createRestaurant({
       name,
       description,
       address,
@@ -67,48 +67,53 @@ export const createRestaurant = async (req: AuthenticatedRequest, res: Response,
       state,
       zipCode,
       phone,
-      image: imagePath,
+      image: restaurantImgPath,
       ownerId: req.user.id
     });
 
     res.status(201).json({
       success: true,
       message: 'Restaurant created successfully',
-      data: { restaurant }
+      data: { restaurant: newRestaurant }
     });
   } catch (error) {
     next(error);
   }
 };
+
+
 
 export const getRestaurantById = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { id } = req.params;
-    const restaurant = await restaurantService.getRestaurantById(id);
+    
+    const restaurantData = await restaurantService.getRestaurantById(id);
 
     res.status(200).json({
       success: true,
       message: 'Restaurant retrieved successfully',
-      data: { restaurant }
+      data: { restaurant: restaurantData }
     });
   } catch (error) {
     next(error);
   }
 };
 
+
 export const getAllRestaurants = async (req: Request, res: Response, next: NextFunction) => {
   try {
-    const restaurants = await restaurantService.getAllRestaurants();
+    const allRestaurants = await restaurantService.getAllRestaurants();
 
     res.status(200).json({
       success: true,
       message: 'Restaurants retrieved successfully',
-      data: { restaurants }
+      data: { restaurants: allRestaurants }
     });
   } catch (error) {
     next(error);
   }
 };
+
 
 export const updateRestaurant = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
@@ -120,12 +125,12 @@ export const updateRestaurant = async (req: AuthenticatedRequest, res: Response,
     const { name, description, address, city, state, zipCode, phone, isActive } = req.body;
 
     // Handle image upload
-    let imagePath: string | undefined;
+    let restaurantImgPath: string | undefined;
     if (req.file) {
-      imagePath = `/uploads/restaurants/${req.file.filename}`;
+      restaurantImgPath = `/uploads/restaurants/${req.file.filename}`;
     }
 
-    const restaurant = await restaurantService.updateRestaurant(id, {
+    const updatedRestaurant = await restaurantService.updateRestaurant(id, {
       name,
       description,
       address,
@@ -133,19 +138,20 @@ export const updateRestaurant = async (req: AuthenticatedRequest, res: Response,
       state,
       zipCode,
       phone,
-      image: imagePath,
+      image: restaurantImgPath,
       isActive
     }, req.user.id);
 
     res.status(200).json({
       success: true,
       message: 'Restaurant updated successfully',
-      data: { restaurant }
+      data: { restaurant: updatedRestaurant }
     });
   } catch (error) {
     next(error);
   }
 };
+
 
 export const deleteRestaurant = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
@@ -154,6 +160,7 @@ export const deleteRestaurant = async (req: AuthenticatedRequest, res: Response,
     }
 
     const { id } = req.params;
+    
     await restaurantService.deleteRestaurant(id, req.user.id);
 
     res.status(200).json({
@@ -164,3 +171,4 @@ export const deleteRestaurant = async (req: AuthenticatedRequest, res: Response,
     next(error);
   }
 };
+

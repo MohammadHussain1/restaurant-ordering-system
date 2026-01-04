@@ -14,6 +14,8 @@ export const setSocketIO = (socketIo: Server) => {
 
 const orderService = new OrderService();
 
+
+
 export const createOrder = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
     if (!req.user) {
@@ -22,7 +24,7 @@ export const createOrder = async (req: AuthenticatedRequest, res: Response, next
 
     const { restaurantId, orderItems, customerNote, deliveryAddress } = req.body;
 
-    const order = await orderService.createOrder({
+    const newOrder = await orderService.createOrder({
       restaurantId,
       orderItems,
       customerNote,
@@ -32,8 +34,8 @@ export const createOrder = async (req: AuthenticatedRequest, res: Response, next
 
     // Emit order created event to relevant restaurant owner
     if (io) {
-      io.to(`restaurant_${order.restaurant.id}`).emit('orderCreated', {
-        order,
+      io.to(`restaurant_${newOrder.restaurant.id}`).emit('orderCreated', {
+        order: newOrder,
         message: 'New order received'
       });
     }
@@ -41,12 +43,13 @@ export const createOrder = async (req: AuthenticatedRequest, res: Response, next
     res.status(201).json({
       success: true,
       message: 'Order created successfully',
-      data: { order }
+      data: { order: newOrder }
     });
   } catch (error) {
     next(error);
   }
 };
+
 
 export const getOrderById = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
@@ -55,17 +58,18 @@ export const getOrderById = async (req: AuthenticatedRequest, res: Response, nex
     }
 
     const { id } = req.params;
-    const order = await orderService.getOrderById(id, req.user.id, req.user.role);
+    const orderDetails = await orderService.getOrderById(id, req.user.id, req.user.role);
 
     res.status(200).json({
       success: true,
       message: 'Order retrieved successfully',
-      data: { order }
+      data: { order: orderDetails }
     });
   } catch (error) {
     next(error);
   }
 };
+
 
 export const getOrdersByCustomer = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
@@ -73,17 +77,18 @@ export const getOrdersByCustomer = async (req: AuthenticatedRequest, res: Respon
       throw new AppError('User not authenticated', 401);
     }
 
-    const orders = await orderService.getOrdersByCustomerId(req.user.id);
+    const customerOrders = await orderService.getOrdersByCustomerId(req.user.id);
 
     res.status(200).json({
       success: true,
       message: 'Orders retrieved successfully',
-      data: { orders }
+      data: { orders: customerOrders }
     });
   } catch (error) {
     next(error);
   }
 };
+
 
 export const getOrdersByRestaurant = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
@@ -92,17 +97,18 @@ export const getOrdersByRestaurant = async (req: AuthenticatedRequest, res: Resp
     }
 
     const { restaurantId } = req.params;
-    const orders = await orderService.getOrdersByRestaurantId(restaurantId, req.user.id, req.user.role);
+    const restaurantOrders = await orderService.getOrdersByRestaurantId(restaurantId, req.user.id, req.user.role);
 
     res.status(200).json({
       success: true,
       message: 'Orders retrieved successfully',
-      data: { orders }
+      data: { orders: restaurantOrders }
     });
   } catch (error) {
     next(error);
   }
 };
+
 
 export const updateOrderStatus = async (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
   try {
@@ -119,7 +125,7 @@ export const updateOrderStatus = async (req: AuthenticatedRequest, res: Response
       throw new AppError('Invalid order status', 400);
     }
 
-    const order = await orderService.updateOrderStatus({
+    const updatedOrder = await orderService.updateOrderStatus({
       orderId: id,
       status: status as OrderStatus,
       updatedBy: req.user.id
@@ -127,17 +133,17 @@ export const updateOrderStatus = async (req: AuthenticatedRequest, res: Response
 
     // Emit order status update to customer
     if (io) {
-      io.to(`order_${order.id}`).emit('orderStatusUpdated', {
-        orderId: order.id,
-        status: order.status,
-        message: `Order status updated to ${order.status}`
+      io.to(`order_${updatedOrder.id}`).emit('orderStatusUpdated', {
+        orderId: updatedOrder.id,
+        status: updatedOrder.status,
+        message: `Order status updated to ${updatedOrder.status}`
       });
     }
 
     res.status(200).json({
       success: true,
       message: 'Order status updated successfully',
-      data: { order }
+      data: { order: updatedOrder }
     });
   } catch (error) {
     next(error);
