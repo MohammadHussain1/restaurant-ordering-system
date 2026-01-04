@@ -2,7 +2,6 @@ import { Router } from 'express';
 import { 
   createRestaurant, 
   getRestaurantById, 
-  getRestaurantBySlug, 
   getAllRestaurants, 
   updateRestaurant, 
   deleteRestaurant,
@@ -18,7 +17,6 @@ const router = Router();
 
 router.get('/', getAllRestaurants);
 router.get('/:id', getRestaurantById);
-router.get('/slug/:slug', getRestaurantBySlug);
 
 // Protected routes
 router.post('/', authenticate, requireRole(UserRole.ADMIN, UserRole.RESTAURANT_OWNER), restaurantUpload.single('image'), validate(createRestaurantSchema), createRestaurant);

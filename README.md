@@ -136,7 +136,6 @@ Import this file into Postman to test all API endpoints.
 #### Restaurants
 - `GET /api/restaurants` - Get all restaurants
 - `GET /api/restaurants/:id` - Get restaurant by ID
-- `GET /api/restaurants/slug/:slug` - Get restaurant by slug
 - `POST /api/restaurants` - Create a new restaurant (auth required, form-data with image upload)
 - `PUT /api/restaurants/:id` - Update restaurant (auth required, form-data with optional image upload)
 - `DELETE /api/restaurants/:id` - Delete restaurant (auth required)

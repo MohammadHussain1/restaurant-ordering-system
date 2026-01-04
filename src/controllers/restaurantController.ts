@@ -96,21 +96,6 @@ export const getRestaurantById = async (req: Request, res: Response, next: NextF
   }
 };
 
-export const getRestaurantBySlug = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { slug } = req.params;
-    const restaurant = await restaurantService.getRestaurantBySlug(slug);
-
-    res.status(200).json({
-      success: true,
-      message: 'Restaurant retrieved successfully',
-      data: { restaurant }
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
 export const getAllRestaurants = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const restaurants = await restaurantService.getAllRestaurants();
