@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USERNAME=postgres
+      - DB_PASSWORD=postgres
+      - DB_NAME=restaurant_db
+      - JWT_SECRET=your_jwt_secret_key_here
+      - JWT_EXPIRES_IN=1h
+      - REFRESH_JWT_SECRET=your_refresh_jwt_secret_key_here
+      - REFRESH_JWT_EXPIRES_IN=7d
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - MAX_FILE_SIZE=2097152
+      - ALLOWED_IMAGE_TYPES=image/jpeg,image/png
+      - UPLOAD_PATH=./uploads
+      - SOCKET_IO_CORS_ORIGIN=http://localhost:3000
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./uploads:/app/uploads
+
+  postgres:
+    image: postgres:15
+    environment:
+      - POSTGRES_DB=restaurant_db
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  postgres_data:
+  redis_data:
