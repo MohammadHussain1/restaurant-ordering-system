@@ -6,7 +6,7 @@ import { User } from '../models/User';
 import { Restaurant } from '../models/Restaurant';
 import { MenuItem } from '../models/MenuItem';
 import { AppError } from '../errors/AppError';
-import { In } from 'typeorm';
+import { In, EntityManager } from 'typeorm';
 
 interface CreateOrderInput {
   restaurantId: string;
@@ -172,8 +172,8 @@ export class OrderService {
       // Save the order with its items
       const savedOrder = await queryRunner.manager.save(order);
       
-      // Simulate payment processing with delay
-      await this.simulatePaymentProcessing(savedOrder.id);
+      // Simulate payment processing with delay as part of the transaction
+      await this.simulatePaymentProcessing(savedOrder.id, queryRunner.manager);
       
       // Commit the transaction
       await queryRunner.commitTransaction();
@@ -252,7 +252,7 @@ export class OrderService {
     }
   }
 
-  private async simulatePaymentProcessing(orderId: string): Promise<void> {
+  private async simulatePaymentProcessing(orderId: string, entityManager: EntityManager): Promise<void> {
     // Introduce 1-3 seconds delay to simulate payment processing
     const delay = Math.floor(Math.random() * 2000) + 1000; // 1-3 seconds
     await new Promise(resolve => setTimeout(resolve, delay));
@@ -260,15 +260,10 @@ export class OrderService {
     // Randomize payment result (90% success rate)
     const paymentSuccess = Math.random() < 0.9;
     
-    // Update payment status in database
-    const order = await this.orderRepository.findOne({
-      where: { id: orderId }
+    // Update payment status in database within the transaction
+    await entityManager.update(Order, orderId, {
+      paymentStatus: paymentSuccess ? PaymentStatus.SUCCESS : PaymentStatus.FAILED
     });
-
-    if (order) {
-      order.paymentStatus = paymentSuccess ? PaymentStatus.SUCCESS : PaymentStatus.FAILED;
-      await this.orderRepository.save(order);
-    }
   }
 
   async getOrderById(orderId: string, userId: string, userRole: string): Promise<OrderResponse> {

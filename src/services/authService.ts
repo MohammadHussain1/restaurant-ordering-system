@@ -27,7 +27,11 @@ interface AuthResponse {
 }
 
 export class AuthService {
-  private userRepository = AppDataSource.getRepository(User);
+  private userRepository;
+
+  constructor() {
+    this.userRepository = AppDataSource.getRepository(User);
+  }
 
   async register(input: RegisterInput): Promise<AuthResponse> {
     // Check if user already exists

@@ -1,54 +1,51 @@
-import { rateLimit } from 'express-rate-limit';
-import { Request } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from './auth';
+import { getRedisClient } from '../config/redis';
 
-// Rate limiter for general API requests
-export const generalRateLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // Limit each IP to 100 requests per windowMs
-  message: {
-    success: false,
-    message: 'Too many requests, please try again later.',
-  },
-  standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
-  legacyHeaders: false, // Disable the `X-RateLimit-*` headers
-});
-
-// Rate limiter for authentication endpoints
-export const authRateLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Limit each IP to 5 login/register attempts per windowMs
-  message: {
-    success: false,
-    message: 'Too many authentication attempts, please try again later.',
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-// Rate limiter for user-specific rate limiting (20 requests per user per minute)
-export const userRateLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  max: (req: Request) => {
-    // If user is authenticated, allow 20 requests per minute
-    // Otherwise, default to 5 requests per minute
-    if ((req as AuthenticatedRequest).user) {
-      return 20;
-    }
-    return 5;
-  },
-  keyGenerator: (req: Request) => {
-    // Use user ID if available, otherwise use IP address
+// Rate limiter using Redis for storage
+export const createRateLimiter = (windowMs: number, max: number) => {
+  return async (req: Request, res: Response, next: NextFunction) => {
+    const redisClient = getRedisClient();
+    
+    // Use user ID if authenticated, otherwise use IP address
     const authenticatedReq = req as AuthenticatedRequest;
-    if (authenticatedReq.user && authenticatedReq.user.id) {
-      return authenticatedReq.user.id;
+    const key = authenticatedReq.user ? 
+      `rate_limit:user:${authenticatedReq.user.id}` : 
+      `rate_limit:ip:${req.ip}`;
+    
+    try {
+      // Get current count and expiration time from Redis
+      const current = await redisClient.get(key);
+      const count = current ? parseInt(current) : 0;
+      
+      if (count === 0) {
+        // First request in this window, set the counter with expiration
+        await redisClient.setEx(key, Math.floor(windowMs / 1000), '1');
+        next();
+      } else if (count < max) {
+        // Increment the counter
+        await redisClient.incr(key);
+        next();
+      } else {
+        // Rate limit exceeded
+        res.status(429).json({
+          success: false,
+          message: 'Too many requests, please try again later.',
+        });
+      }
+    } catch (error) {
+      // If Redis is unavailable, continue with the request
+      console.error('Rate limiter error:', error);
+      next();
     }
-    return req.ip || 'unknown';
-  },
-  message: {
-    success: false,
-    message: 'Too many requests, please try again later.',
-  },
-  standardHeaders: true,
-  legacyHeaders: false,
-});
+  };
+};
+
+// Rate limiter for general API requests (100 requests per 15 minutes)
+export const generalRateLimiter = createRateLimiter(15 * 60 * 1000, 100);
+
+// Rate limiter for authentication endpoints (5 attempts per 15 minutes)
+export const authRateLimiter = createRateLimiter(15 * 60 * 1000, 5);
+
+// Rate limiter for user-specific rate limiting (20 requests per minute)
+export const userRateLimiter = createRateLimiter(60 * 1000, 20);

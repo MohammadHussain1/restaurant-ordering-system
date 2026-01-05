@@ -6,7 +6,7 @@ import { AppDataSource } from './database/datasource';
 import { connectRedis } from './config/redis';
 import { attachJSONMethods } from './utils/redis';
 import { errorHandler, notFound } from './middlewares/errorHandler';
-import { generalRateLimiter } from './middlewares/rateLimiter';
+import { generalRateLimiter, authRateLimiter, userRateLimiter } from './middlewares/rateLimiter';
 import authRoutes from './routes/auth';
 import restaurantRoutes from './routes/restaurant';
 import menuRoutes from './routes/menu';
@@ -45,10 +45,12 @@ class App {
   }
 
   private initializeRoutes(): void {
-    this.app.use('/api/auth', authRoutes);
-    this.app.use('/api/restaurants', restaurantRoutes);
-    this.app.use('/api/menu', menuRoutes);
-    this.app.use('/api/orders', orderRoutes);
+    // Apply auth rate limiter to auth routes
+    this.app.use('/api/auth', authRateLimiter, authRoutes);
+    // Apply user rate limiter to protected routes
+    this.app.use('/api/restaurants', userRateLimiter, restaurantRoutes);
+    this.app.use('/api/menu', userRateLimiter, menuRoutes);
+    this.app.use('/api/orders', userRateLimiter, orderRoutes);
 
     // Health check endpoint
     this.app.get('/health', (req: Request, res: Response) => {
